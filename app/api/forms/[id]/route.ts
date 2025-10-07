@@ -7,12 +7,13 @@ import Response from '@/models/Response';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await connectDB();
 
-    const form = await Form.findById(params.id);
+    const form = await Form.findById(id);
 
     if (!form) {
       return NextResponse.json(
@@ -33,9 +34,10 @@ export async function GET(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -48,7 +50,7 @@ export async function DELETE(
     await connectDB();
 
     const form = await Form.findOne({
-      _id: params.id,
+      _id: id,
       userId: session.user.id,
     });
 
@@ -59,8 +61,8 @@ export async function DELETE(
       );
     }
 
-    await Form.findByIdAndDelete(params.id);
-    await Response.deleteMany({ formId: params.id });
+    await Form.findByIdAndDelete(id);
+    await Response.deleteMany({ formId: id });
 
     return NextResponse.json({ message: 'Form deleted successfully' });
   } catch (error) {
@@ -74,9 +76,10 @@ export async function DELETE(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -91,7 +94,7 @@ export async function PUT(
     await connectDB();
 
     const form = await Form.findOne({
-      _id: params.id,
+      _id: id,
       userId: session.user.id,
     });
 

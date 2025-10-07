@@ -18,7 +18,6 @@ import {
   Circle,
   List,
   Calendar,
-  Upload,
   Star,
   Plus,
   Trash2,
@@ -36,7 +35,6 @@ const fieldTypes = [
   { type: 'checkbox', label: 'Checkbox', icon: CheckSquare },
   { type: 'dropdown', label: 'Dropdown', icon: List },
   { type: 'date', label: 'Date Picker', icon: Calendar },
-  { type: 'file', label: 'File Upload', icon: Upload },
   { type: 'rating', label: 'Rating', icon: Star },
 ];
 
@@ -400,8 +398,6 @@ function renderPreviewField(field: IFormField) {
       );
     case 'date':
       return <Input type="date" />;
-    case 'file':
-      return <Input type="file" />;
     case 'rating':
       return (
         <div className="flex gap-1">

@@ -278,20 +278,6 @@ function renderFormField(
         />
       );
 
-    case 'file':
-      return (
-        <Input
-          type="file"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              onChange(file.name);
-            }
-          }}
-          required={field.required}
-        />
-      );
-
     case 'rating':
       return (
         <div className="flex gap-1">

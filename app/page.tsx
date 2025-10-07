@@ -1,16 +1,81 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText, Share2, BarChart3, Zap, Shield, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function HomePage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const [currentFieldIndex, setCurrentFieldIndex] = useState(0);
+
+  const fieldShowcase = [
+    {
+      type: 'Text Input',
+      icon: '✍️',
+      label: 'Full Name',
+      element: <div className="h-10 bg-muted/50 rounded-md border-2 border-primary/50 px-3 flex items-center text-sm text-muted-foreground">John Doe</div>,
+    },
+    {
+      type: 'Email Input',
+      icon: '📧',
+      label: 'Email Address',
+      element: <div className="h-10 bg-muted/50 rounded-md border-2 border-primary/50 px-3 flex items-center text-sm text-muted-foreground">user@example.com</div>,
+    },
+    {
+      type: 'Multiple Choice',
+      icon: '☑️',
+      label: 'Select Options',
+      element: (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2"><div className="h-4 w-4 bg-primary rounded-sm" />Option 1</div>
+          <div className="flex items-center gap-2"><div className="h-4 w-4 border-2 border-border rounded-sm" />Option 2</div>
+          <div className="flex items-center gap-2"><div className="h-4 w-4 border-2 border-border rounded-sm" />Option 3</div>
+        </div>
+      ),
+    },
+    {
+      type: 'Rating',
+      icon: '⭐',
+      label: 'Rate Your Experience',
+      element: (
+        <div className="flex gap-1">
+          <div className="text-2xl text-yellow-500">⭐⭐⭐⭐</div>
+          <div className="text-2xl text-muted-foreground">⭐</div>
+        </div>
+      ),
+    },
+    {
+      type: 'Dropdown',
+      icon: '📋',
+      label: 'Select Country',
+      element: <div className="h-10 bg-muted/50 rounded-md border-2 border-primary/50 px-3 flex items-center justify-between text-sm"><span className="text-muted-foreground">United States</span><span>▼</span></div>,
+    },
+    {
+      type: 'Date Picker',
+      icon: '📅',
+      label: 'Choose Date',
+      element: <div className="h-10 bg-muted/50 rounded-md border-2 border-primary/50 px-3 flex items-center text-sm text-muted-foreground">2025-10-07</div>,
+    },
+    {
+      type: 'Long Text',
+      icon: '📝',
+      label: 'Your Message',
+      element: <div className="h-24 bg-muted/50 rounded-md border-2 border-primary/50 p-3 text-sm text-muted-foreground">Type your message here...</div>,
+    },
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentFieldIndex((prev) => (prev + 1) % fieldShowcase.length);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [fieldShowcase.length]);
 
   const features = [
     {
@@ -114,7 +179,7 @@ export default function HomePage() {
           </div>
         </motion.div>
 
-        {/* Hero Image/Preview */}
+        {/* Hero Image/Preview - Animated Field Showcase */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -122,22 +187,81 @@ export default function HomePage() {
           className="mt-16"
         >
           <div className="relative max-w-5xl mx-auto">
-            <div className="bg-card border rounded-lg shadow-2xl p-8">
+            <div className="bg-card border rounded-lg shadow-2xl p-8 overflow-hidden">
+              <div className="mb-6 text-center">
+                <h3 className="text-2xl font-bold mb-2">7 Field Types Available</h3>
+                <p className="text-muted-foreground text-sm">Watch different form elements in action</p>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <div className="h-10 bg-muted rounded animate-pulse" />
-                  <div className="h-32 bg-muted rounded animate-pulse" />
-                  <div className="h-10 bg-muted rounded animate-pulse" />
-                  <div className="h-10 bg-primary/20 rounded" />
-                </div>
-                <div className="space-y-4">
-                  <div className="h-48 bg-muted rounded animate-pulse" />
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="h-24 bg-muted rounded animate-pulse" />
-                    <div className="h-24 bg-muted rounded animate-pulse" />
-                    <div className="h-24 bg-muted rounded animate-pulse" />
+                {/* Left Column - Animated Field */}
+                <div className="flex items-center justify-center min-h-[300px]">
+                  <div className="w-full space-y-4">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={currentFieldIndex}
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -50 }}
+                        transition={{ duration: 0.4 }}
+                        className="space-y-3"
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="text-4xl">{fieldShowcase[currentFieldIndex].icon}</div>
+                          <div>
+                            <div className="text-lg font-bold">{fieldShowcase[currentFieldIndex].type}</div>
+                            <div className="text-sm text-muted-foreground">Field {currentFieldIndex + 1} of {fieldShowcase.length}</div>
+                          </div>
+                        </div>
+                        <label className="text-sm font-medium block">{fieldShowcase[currentFieldIndex].label}</label>
+                        {fieldShowcase[currentFieldIndex].element}
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
                 </div>
+
+                {/* Right Column - Field List */}
+                <div className="space-y-3">
+                  <div className="text-sm font-semibold mb-4">All Available Field Types:</div>
+                  {fieldShowcase.map((field, index) => (
+                    <motion.div
+                      key={index}
+                      className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
+                        index === currentFieldIndex
+                          ? 'bg-primary/10 border-primary scale-105'
+                          : 'bg-muted/20 border-border hover:bg-muted/40'
+                      }`}
+                      animate={{
+                        scale: index === currentFieldIndex ? 1.05 : 1,
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="text-2xl">{field.icon}</div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">{field.type}</div>
+                      </div>
+                      {index === currentFieldIndex && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="h-2 w-2 bg-primary rounded-full"
+                        />
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Progress Indicator */}
+              <div className="mt-6 flex justify-center gap-2">
+                {fieldShowcase.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-1.5 rounded-full transition-all ${
+                      index === currentFieldIndex ? 'w-8 bg-primary' : 'w-1.5 bg-muted-foreground/30'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
           </div>

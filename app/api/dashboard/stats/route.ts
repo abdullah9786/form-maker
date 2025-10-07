@@ -20,9 +20,10 @@ export async function GET(req: NextRequest) {
 
     const forms = await Form.find({ userId: session.user.id })
       .sort({ createdAt: -1 })
-      .limit(5);
+      .limit(5)
+      .lean();
 
-    const formIds = forms.map(form => form._id);
+    const formIds = forms.map((form: any) => form._id);
 
     const responses = await Response.find({ formId: { $in: formIds } });
 
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
       return acc;
     }, {});
 
-    const recentForms = forms.map(form => ({
+    const recentForms = forms.map((form: any) => ({
       _id: form._id.toString(),
       title: form.title,
       createdAt: form.createdAt,

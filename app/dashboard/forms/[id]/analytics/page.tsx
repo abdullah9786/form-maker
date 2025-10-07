@@ -13,6 +13,7 @@ import {
   Calendar,
   MessageSquare,
   TrendingUp,
+  BarChart3,
 } from 'lucide-react';
 import axios from 'axios';
 import { IFormField } from '@/models/Form';
@@ -81,8 +82,8 @@ export default function AnalyticsPage() {
     const headers = form.fields.map(field => field.label);
     const rows = responses.map(response => 
       form.fields.map(field => {
-        const answer = response.answers[field.id];
-        if (typeof answer === 'object') {
+        const answer = response.answers?.[field.id];
+        if (typeof answer === 'object' && answer !== null) {
           return Object.entries(answer)
             .filter(([_, value]) => value)
             .map(([key]) => key)
@@ -116,7 +117,7 @@ export default function AnalyticsPage() {
       });
 
       responses.forEach(response => {
-        const answer = response.answers[field.id];
+        const answer = response.answers?.[field.id];
         if (answer && counts[answer] !== undefined) {
           counts[answer]++;
         }
@@ -135,7 +136,7 @@ export default function AnalyticsPage() {
       });
 
       responses.forEach(response => {
-        const answer = response.answers[field.id];
+        const answer = response.answers?.[field.id];
         if (answer && typeof answer === 'object') {
           Object.entries(answer).forEach(([option, checked]) => {
             if (checked && counts[option] !== undefined) {
@@ -155,7 +156,7 @@ export default function AnalyticsPage() {
       const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
       
       responses.forEach(response => {
-        const rating = response.answers[field.id];
+        const rating = response.answers?.[field.id];
         if (rating && counts[rating] !== undefined) {
           counts[rating]++;
         }
@@ -289,66 +290,110 @@ export default function AnalyticsPage() {
           </TabsList>
 
           <TabsContent value="analytics" className="space-y-6">
-            {form.fields.map((field) => {
-              const data = getFieldAnalytics(field);
-              
-              if (!data) {
-                return null;
-              }
+            {(() => {
+              const chartableFields = form.fields.filter(field => 
+                ['radio', 'checkbox', 'dropdown', 'rating'].includes(field.type)
+              );
 
-              return (
-                <motion.div
-                  key={field.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
+              if (chartableFields.length === 0) {
+                return (
                   <Card>
-                    <CardHeader>
-                      <CardTitle>{field.label}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={data}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Bar dataKey="value" fill="#8884d8" />
-                          </BarChart>
-                        </ResponsiveContainer>
-
-                        <ResponsiveContainer width="100%" height={300}>
-                          <PieChart>
-                            <Pie
-                              data={data}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              label={({ name, percent }) =>
-                                `${name}: ${(percent * 100).toFixed(0)}%`
-                              }
-                              outerRadius={80}
-                              fill="#8884d8"
-                              dataKey="value"
-                            >
-                              {data.map((entry, index) => (
-                                <Cell
-                                  key={`cell-${index}`}
-                                  fill={COLORS[index % COLORS.length]}
-                                />
-                              ))}
-                            </Pie>
-                            <Tooltip />
-                          </PieChart>
-                        </ResponsiveContainer>
+                    <CardContent className="py-12 text-center">
+                      <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">No Chart Data Available</h3>
+                      <p className="text-muted-foreground mb-4">
+                        This form contains only text-based fields. Charts are available for:
+                      </p>
+                      <div className="flex gap-2 justify-center flex-wrap text-sm">
+                        <Badge variant="outline">Radio Buttons</Badge>
+                        <Badge variant="outline">Checkboxes</Badge>
+                        <Badge variant="outline">Dropdowns</Badge>
+                        <Badge variant="outline">Rating Fields</Badge>
                       </div>
+                      <p className="text-sm text-muted-foreground mt-4">
+                        View the "All Responses" tab to see submitted answers
+                      </p>
                     </CardContent>
                   </Card>
-                </motion.div>
-              );
-            })}
+                );
+              }
+
+              return chartableFields.map((field) => {
+                const data = getFieldAnalytics(field);
+                
+                if (!data || data.every(item => item.value === 0)) {
+                  return (
+                    <motion.div
+                      key={field.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>{field.label}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="py-8 text-center text-muted-foreground">
+                          No responses yet for this field
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                }
+
+                return (
+                  <motion.div
+                    key={field.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{field.label}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={data}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="name" />
+                              <YAxis />
+                              <Tooltip />
+                              <Legend />
+                              <Bar dataKey="value" fill="#8884d8" />
+                            </BarChart>
+                          </ResponsiveContainer>
+
+                          <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                              <Pie
+                                data={data}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({ name, percent }) =>
+                                  `${name}: ${(percent * 100).toFixed(0)}%`
+                                }
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                              >
+                                {data.map((entry, index) => (
+                                  <Cell
+                                    key={`cell-${index}`}
+                                    fill={COLORS[index % COLORS.length]}
+                                  />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              });
+            })()}
           </TabsContent>
 
           <TabsContent value="responses">
@@ -381,7 +426,7 @@ export default function AnalyticsPage() {
                             {new Date(response.createdAt).toLocaleString()}
                           </td>
                           {form.fields.map(field => {
-                            const answer = response.answers[field.id];
+                            const answer = response.answers?.[field.id];
                             let displayValue = answer;
 
                             if (typeof answer === 'object' && answer !== null) {

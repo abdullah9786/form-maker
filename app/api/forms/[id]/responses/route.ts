@@ -7,9 +7,10 @@ import Response from '@/models/Response';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { answers } = await req.json();
 
     if (!answers) {
@@ -21,7 +22,7 @@ export async function POST(
 
     await connectDB();
 
-    const form = await Form.findById(params.id);
+    const form = await Form.findById(id);
 
     if (!form) {
       return NextResponse.json(
@@ -31,7 +32,7 @@ export async function POST(
     }
 
     const response = await Response.create({
-      formId: params.id,
+      formId: id,
       answers,
     });
 
@@ -50,9 +51,10 @@ export async function POST(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -65,7 +67,7 @@ export async function GET(
     await connectDB();
 
     const form = await Form.findOne({
-      _id: params.id,
+      _id: id,
       userId: session.user.id,
     });
 
@@ -76,7 +78,7 @@ export async function GET(
       );
     }
 
-    const responses = await Response.find({ formId: params.id })
+    const responses = await Response.find({ formId: id })
       .sort({ createdAt: -1 });
 
     return NextResponse.json({ responses });

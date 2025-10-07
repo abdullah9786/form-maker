@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IFormField {
   id: string;
-  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'dropdown' | 'date' | 'file' | 'rating';
+  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'dropdown' | 'date' | 'rating';
   label: string;
   placeholder?: string;
   options?: string[];
@@ -22,7 +22,7 @@ const FormFieldSchema = new Schema({
   id: { type: String, required: true },
   type: {
     type: String,
-    enum: ['text', 'textarea', 'radio', 'checkbox', 'dropdown', 'date', 'file', 'rating'],
+    enum: ['text', 'textarea', 'radio', 'checkbox', 'dropdown', 'date', 'rating'],
     required: true,
   },
   label: { type: String, required: true },

@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
 
         await connectDB();
 
-        const user = await User.findOne({ email: credentials.email });
+        const user = await User.findOne({ email: credentials.email }).lean();
 
         if (!user) {
           throw new Error('No user found with this email');
@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: user._id.toString(),
+          id: (user._id as any).toString(),
           email: user.email,
         };
       },
